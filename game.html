@@ -979,7 +979,7 @@ async function createLeague(){
     const id=await createBin(d);
     leagueCode=code;binId=id;playerId=pid;playerName=name;isAdmin=true;leagueData=d;
     localStorage.setItem('wc26_sess',JSON.stringify({leagueCode,binId,playerId,playerName,isAdmin}));
-    document.getElementById('dispCode').textContent=code;
+    var dcEl=document.getElementById('dispCode');if(dcEl)dcEl.textContent=code;
     document.getElementById('loadCreate').style.display='none';
     showScreen('sShare');
     // Set share URL box after screen is shown
@@ -1088,7 +1088,9 @@ function calcScore(picks,act){
   return s;
 }
 function updateScore(){
-  document.getElementById('hScore').textContent=calcScore(serial(),leagueData?.actualResults||{});
+  var s=calcScore(serial(),leagueData?leagueData.actualResults||{}:{});
+  var el=document.getElementById('hScore');if(el)el.textContent=s;
+  var el2=document.getElementById('navScore');if(el2)el2.textContent=s+' pts';
 }
 
 // ===== PROPAGATE KNOCKOUT =====
@@ -1626,21 +1628,24 @@ function showErr(id,msg){var e=document.getElementById(id);if(e){e.textContent=m
 
 // Override enterGame
 function enterGame(){
-  document.getElementById('gName').textContent=playerName+(isAdmin?' (Admin)':'')+' ⚽';
-  document.getElementById('gCode').textContent=leagueCode;
-  document.getElementById('navRight').style.display='flex';
-  document.getElementById('navAdmin').style.display=isAdmin?'flex':'none';
-  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isAdmin?'':'' );
-  if(leagueData?.players[playerId]?.picks) loadPicks(leagueData.players[playerId].picks);
   showScreen('sGame');
+  // Set elements AFTER screen is shown so they exist in DOM
+  var gn=document.getElementById('gName');if(gn)gn.textContent=playerName+(isAdmin?' (Admin)':'')+' ⚽';
+  var gc=document.getElementById('gCode');if(gc)gc.textContent=leagueCode;
+  var nr=document.getElementById('navRight');if(nr)nr.style.display='flex';
+  var na=document.getElementById('navAdmin');if(na)na.style.display=isAdmin?'flex':'none';
+  document.querySelectorAll('.admin-only').forEach(function(el){el.style.display=isAdmin?'':'none';});
+  if(leagueData&&leagueData.players&&leagueData.players[playerId]&&leagueData.players[playerId].picks){
+    loadPicks(leagueData.players[playerId].picks);
+  }
   renderAll();updateScore();
 }
 
 // Override updateScore
 function updateScore(){
-  const s=calcScore(serial(),leagueData?.actualResults||{});
-  document.getElementById('navScore').textContent=s+' pts';
-  document.getElementById('hScore') && (document.getElementById('hScore').textContent=s);
+  var s=calcScore(serial(),leagueData?leagueData.actualResults||{}:{});
+  var ns=document.getElementById('navScore');if(ns)ns.textContent=s+' pts';
+  var hs=document.getElementById('hScore');if(hs)hs.textContent=s;
 }
 
 // Override sw with new tab IDs
